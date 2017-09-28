@@ -1,0 +1,63 @@
+---
+title: "Swiss Fertility App"
+author: "David Parra"
+date: "September 26, 2017"
+output: ioslides_presentation 
+---
+
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(echo = FALSE)
+suppressPackageStartupMessages(library(plotly))
+
+```
+
+## Swiss Fertility Data
+
+This simple app shows the effect of using different covariates to predict fertility in the Swiss Fertility and Socioeconomic Indicators (1888) Data. 
+
+- The app can be found [here](https://davidcparrar.shinyapps.io/my_first_shinny_app/)
+- The Github repo can be found [here](https://github.com/Davidcparrar/DDPShiny)
+- The data set is available in R and [here](https://opr.princeton.edu/archive/pefp/switz.aspx)
+
+## Usage
+
+The app is divided in two panels, Inputs and results.
+
+### Inputs
+
+- Select which variables to include in the regression model
+- Select which variable (x-axis) will be plotted against Fertility (y-axis) 
+- Plot prediction?: select whether the regression line with the corresponding confidence intervals should be shown. 
+
+Once the parameters have been selected the user must click on the submit button to obtain the results.
+
+## Results: Prediction
+
+The app will show the plot with the correspending regression model and the confidence intervals of the prediction
+
+```{r plot, echo = FALSE, warning=FALSE, message=FALSE}
+q <- ggplot(data = swiss, aes(y = Fertility))
+q <- q + geom_point(aes_string(x = swiss$Agriculture))
+
+prediction <- predict(lm(Fertility ~ Agriculture, data = swiss), interval = "confidence")
+predframe <- data.frame( x = swiss$Agriculture, Fertility = prediction[,1], lwr = prediction[,2], upr = prediction[,3])
+
+q <- q + geom_ribbon(data=predframe,aes(ymin=lwr,ymax=upr, x = x),alpha=0.3) + geom_line(data=predframe,aes(y = Fertility, x = x),size = 1.5, colour = "lightblue") + labs(x = "Agriculture")
+    
+ggplotly(q)
+```
+
+
+
+## Results: Model 
+
+Finally, under the prediction plot a summary of the parameters of the regression model will be presented to the user
+
+```{r cars, echo = FALSE,comment=""}
+table <- signif(summary(lm(Fertility ~ Agriculture, data = swiss))$coefficients, digits = 4)
+table
+```
+
+
+
+
